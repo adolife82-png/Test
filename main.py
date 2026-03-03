@@ -5,7 +5,7 @@ from discord import app_commands
 
 TOKEN = os.getenv("TOKEN")
 
-# ---------- AYARLAR ----------
+# ----------------- AYARLAR -----------------
 VOICE_CHANNEL_ID = 1478399683385626799  # Ses kanal ID
 LOG_CHANNEL_ID = 123456789012345678      # Mod log kanalı ID
 TICKET_CATEGORY_ID = 987654321098765432  # Ticket kategori ID
@@ -18,24 +18,17 @@ intents.voice_states = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-# ---------- SES KANALINA 7/24 BAĞLAN ----------
+# ----------------- SES KANALI -----------------
 async def connect_to_voice():
     channel = bot.get_channel(VOICE_CHANNEL_ID)
     if channel and isinstance(channel, discord.VoiceChannel):
         voice_client = discord.utils.get(bot.voice_clients, guild=channel.guild)
-        if not voice_client:
+        if not voice_client or not voice_client.is_connected():
             try:
                 await channel.connect(reconnect=True)
                 print("Ses kanalına bağlandı!")
             except Exception as e:
                 print("Ses kanalına bağlanamadı:", e)
-        else:
-            if not voice_client.is_connected():
-                try:
-                    await voice_client.connect()
-                    print("Ses kanalına yeniden bağlandı!")
-                except Exception as e:
-                    print("Yeniden bağlanamadı:", e)
 
 @bot.event
 async def on_ready():
@@ -50,17 +43,16 @@ async def keep_alive():
 
 @bot.event
 async def on_voice_state_update(member, before, after):
-    if member.id == bot.user.id:
-        if after.channel is None:
-            await connect_to_voice()
+    if member.id == bot.user.id and after.channel is None:
+        await connect_to_voice()
 
-# ---------- MOD LOG MESAJI ----------
+# ----------------- MOD LOG -----------------
 async def send_mod_log(message):
     channel = bot.get_channel(LOG_CHANNEL_ID)
     if channel:
         await channel.send(message)
 
-# ---------- SLASH KOMUTLAR ----------
+# ----------------- SLASH KOMUTLAR -----------------
 # Kick
 @bot.tree.command(name="kick", description="Üyeyi sunucudan atar")
 @app_commands.checks.has_permissions(kick_members=True)
@@ -101,15 +93,24 @@ async def mute(interaction: discord.Interaction, member: discord.Member, time: i
 @bot.tree.command(name="ticket", description="Destek talebi oluşturur")
 async def ticket(interaction: discord.Interaction, konu: str):
     category = bot.get_channel(TICKET_CATEGORY_ID)
-    if category:
-        overwrites = {
-            interaction.guild.default_role: discord.PermissionOverwrite(view_channel=False),
-            interaction.user: discord.PermissionOverwrite(view_channel=True)
-        }
-        channel = await category.create_text_channel(f"ticket-{interaction.user.name}", overwrites=overwrites)
-        await channel.send(f"{interaction.user.mention} destek talebi açtı: **{konu}**")
-        await interaction.response.send_message(f"Ticket oluşturuldu: {channel.mention}", ephemeral=True)
-        await send_mod_log(f"🎫 Ticket açıldı: {interaction.user} -> {channel.name}")
+    if not category or not isinstance(category, discord.CategoryChannel):
+        await interaction.response.send_message("Kategori bulunamadı!", ephemeral=True)
+        return
+
+    overwrites = {
+        interaction.guild.default_role: discord.PermissionOverwrite(view_channel=False),
+        interaction.user: discord.PermissionOverwrite(view_channel=True),
+        bot.user: discord.PermissionOverwrite(view_channel=True, send_messages=True)
+    }
+
+    channel = await category.create_text_channel(
+        name=f"ticket-{interaction.user.name}",
+        overwrites=overwrites
+    )
+
+    await channel.send(f"{interaction.user.mention} destek talebi açtı: **{konu}**")
+    await interaction.response.send_message(f"Ticket oluşturuldu: {channel.mention}", ephemeral=True)
+    await send_mod_log(f"🎫 Ticket açıldı: {interaction.user} -> {channel.name}")
 
 # Yetki hataları
 @kick.error
