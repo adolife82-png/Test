@@ -5,11 +5,11 @@ from discord import app_commands
 
 TOKEN = os.getenv("TOKEN")
 
-# Kanal ve rol ID'leri
+# ---------- AYARLAR ----------
 VOICE_CHANNEL_ID = 1478399683385626799  # Ses kanal ID
-LOG_CHANNEL_ID = 123456789012345678    # Mod log kanalı ID
+LOG_CHANNEL_ID = 123456789012345678      # Mod log kanalı ID
 TICKET_CATEGORY_ID = 987654321098765432  # Ticket kategori ID
-MOD_ROLE_ID = 112233445566778899        # Mod rol ID
+MOD_ROLE_ID = 112233445566778899         # Mod rol ID
 
 intents = discord.Intents.default()
 intents.members = True
@@ -18,44 +18,49 @@ intents.voice_states = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-# --- Ses Kanalına Bağlan ---
+# ---------- SES KANALINA 7/24 BAĞLAN ----------
 async def connect_to_voice():
     channel = bot.get_channel(VOICE_CHANNEL_ID)
     if channel and isinstance(channel, discord.VoiceChannel):
-        if not channel.guild.voice_client:
+        voice_client = discord.utils.get(bot.voice_clients, guild=channel.guild)
+        if not voice_client:
             try:
                 await channel.connect(reconnect=True)
                 print("Ses kanalına bağlandı!")
             except Exception as e:
-                print("Bağlanamadı:", e)
+                print("Ses kanalına bağlanamadı:", e)
+        else:
+            if not voice_client.is_connected():
+                try:
+                    await voice_client.connect()
+                    print("Ses kanalına yeniden bağlandı!")
+                except Exception as e:
+                    print("Yeniden bağlanamadı:", e)
 
 @bot.event
 async def on_ready():
     print(f"{bot.user} aktif!")
-    try:
-        await bot.tree.sync()
-    except Exception as e:
-        print("Slash komut sync hatası:", e)
+    await bot.tree.sync()
     await connect_to_voice()
-    auto_reconnect.start()
+    keep_alive.start()
 
-@tasks.loop(seconds=30)
-async def auto_reconnect():
+@tasks.loop(seconds=20)
+async def keep_alive():
     await connect_to_voice()
 
 @bot.event
 async def on_voice_state_update(member, before, after):
-    if member.id == bot.user.id and after.channel is None:
-        await connect_to_voice()
+    if member.id == bot.user.id:
+        if after.channel is None:
+            await connect_to_voice()
 
-# --- Mod Log ---
+# ---------- MOD LOG MESAJI ----------
 async def send_mod_log(message):
     channel = bot.get_channel(LOG_CHANNEL_ID)
     if channel:
         await channel.send(message)
 
-# --- Slash Komutlar ---
-
+# ---------- SLASH KOMUTLAR ----------
 # Kick
 @bot.tree.command(name="kick", description="Üyeyi sunucudan atar")
 @app_commands.checks.has_permissions(kick_members=True)
