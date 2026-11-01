@@ -13,4 +13,6 @@ commands:
     permission: yakartop.use
 
 permissions:
-  yakartop
+  yakartop.admin:
+    description: Admin komutlarını kullanma yetkisi
+    default: op
