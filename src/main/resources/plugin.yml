@@ -2,7 +2,8 @@ name: YakarTop
 version: 1.0.0
 main: com.seninadi.yakartop.YakarTopPlugin
 api-version: "1.21"
-authors: OxyGen
+authors:
+  - OxyGen
 description: Yakar Top Mini Oyunu
 
 commands:
