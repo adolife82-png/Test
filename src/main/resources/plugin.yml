@@ -2,7 +2,7 @@ name: YakarTop
 version: 1.0.0
 main: com.seninadi.yakartop.YakarTopPlugin
 api-version: "1.21"
-authors: [ SeninAdin ]
+authors: OxyGen
 description: Yakar Top Mini Oyunu
 
 commands:
@@ -10,8 +10,7 @@ commands:
     description: Yakar Top ana komutu
     usage: /db
     aliases: [ yakartop ]
+    permission: yakartop.use
 
 permissions:
-  yakartop.admin:
-    description: Admin komutlarini kullanma yetkisi
-    default: op
+  yakartop
