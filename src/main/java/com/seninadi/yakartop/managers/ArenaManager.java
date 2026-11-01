@@ -4,8 +4,7 @@ import com.seninadi.yakartop.YakarTopPlugin;
 import com.seninadi.yakartop.models.Arena;
 import org.bukkit.Location;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class ArenaManager {
     private final YakarTopPlugin plugin;
@@ -29,9 +28,7 @@ public class ArenaManager {
 
     public void setLobbyLocation(String name, Location location) {
         Arena arena = arenas.get(name.toLowerCase());
-        if (arena != null) {
-            arena.setLobbyLocation(location);
-        }
+        if (arena != null) arena.setLobbyLocation(location);
     }
 
     public Arena getArena(String name) {
@@ -40,5 +37,11 @@ public class ArenaManager {
 
     public Map<String, Arena> getArenas() {
         return arenas;
+    }
+
+    public List<String> getArenaNames() {
+        List<String> names = new ArrayList<>();
+        for (Arena arena : arenas.values()) names.add(arena.getName());
+        return names;
     }
 }
