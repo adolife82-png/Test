@@ -2,7 +2,6 @@ package com.seninadi.yakartop.listeners;
 
 import com.seninadi.yakartop.YakarTopPlugin;
 import com.seninadi.yakartop.managers.GameManager;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -22,14 +21,10 @@ public class GameListener implements Listener {
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
         if (event.getHand() != EquipmentSlot.HAND) return;
-        Player player = event.getPlayer();
+        if (event.getAction() != Action.LEFT_CLICK_AIR && event.getAction() != Action.LEFT_CLICK_BLOCK) return;
 
-        // Sadece sol tik (firlatma/yakalama)
-        if (event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.LEFT_CLICK_BLOCK) {
-            // Burada top itemini kontrol et
-            // Eger oyuncunun elinde "top" itemi varsa ve hedef seciliyse firlat
-            // Ornek: hedefe kirmizi glow verme (Paper Glowing API veya Team)
-            // player.sendMessage("Sol tik algilandi. Firlatma mekanigi buraya gelecek.");
-        }
+        Player player = event.getPlayer();
+        // Top sistemi bir sonraki adimda buraya eklenecek
+        // Ornek: eger elinde "top" itemi varsa ve hedef seciliyse firlat
     }
 }
