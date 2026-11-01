@@ -8,12 +8,14 @@ public class Arena {
     private Location area1;
     private Location area2;
     private Location lobbyLocation;
+    private boolean active;
 
     public Arena(String name, int maxPlayers, Location area1, Location area2) {
         this.name = name;
         this.maxPlayers = maxPlayers;
         this.area1 = area1;
         this.area2 = area2;
+        this.active = false;
     }
 
     public String getName() { return name; }
@@ -25,4 +27,10 @@ public class Arena {
     public void setArea2(Location area2) { this.area2 = area2; }
     public Location getLobbyLocation() { return lobbyLocation; }
     public void setLobbyLocation(Location lobbyLocation) { this.lobbyLocation = lobbyLocation; }
+    public boolean isActive() { return active; }
+    public void setActive(boolean active) { this.active = active; }
+
+    public boolean isReady() {
+        return area1 != null && area2 != null && lobbyLocation != null;
+    }
 }
